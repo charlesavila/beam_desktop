@@ -9,6 +9,7 @@ from .catalog import SECTIONS, MATERIALS, SPEC_EXAMPLES
 from .validation import validate
 from .analysis import analyze
 from .diagrams import Diagrams, decorate
+from .pdf_export import export_calculation_sheet
 
 
 class ScrollFrame(ttk.Frame):
@@ -117,6 +118,7 @@ class Application:
         toolbar.pack(fill="x")
         ttk.Button(toolbar, text="Calculate", style="Accent.TButton", command=self.calculate).pack(side="left", padx=3)
         ttk.Button(toolbar, text="Export CSV", command=self.export_results).pack(side="left", padx=3)
+        ttk.Button(toolbar, text="Calculation Sheet PDF", command=self.export_calculation_sheet).pack(side="left", padx=3)
         ttk.Button(toolbar, text="Reset example", command=self.reset).pack(side="left", padx=3)
         ttk.Label(toolbar, text="Spec examples:").pack(side="left", padx=(18, 5))
         self.example_choice = tk.StringVar(value=next(iter(SPEC_EXAMPLES)))
@@ -348,6 +350,23 @@ class Application:
         except OSError as exc:
             messagebox.showerror("Cannot export results", str(exc), parent=self.root)
             return
+
+    def export_calculation_sheet(self):
+        beam, result = self.diagrams.beam, self.diagrams.result
+        if beam is None or result is None:
+            messagebox.showinfo("No results to export", "Calculate a valid beam before creating a calculation sheet.",
+                                parent=self.root)
+            return
+        path = filedialog.asksaveasfilename(
+            parent=self.root, title="Save calculation sheet", defaultextension=".pdf",
+            filetypes=(("PDF files", "*.pdf"), ("All files", "*.*")))
+        if not path:
+            return
+        try:
+            export_calculation_sheet(path, beam, result, self.fields["section"][0].get(),
+                                     self.fields["material"][0].get())
+        except OSError as exc:
+            messagebox.showerror("Cannot save calculation sheet", str(exc), parent=self.root)
 
     def open_design(self):
         path = filedialog.askopenfilename(

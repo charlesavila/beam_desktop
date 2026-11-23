@@ -2,6 +2,12 @@
 
 ## 2026-11-23
 
+- **Asked:** Add a calculation sheet button that saves the diagrams and checks as a PDF, with inputs listed at the top, ready to hand in with a design.
+- **Changed:** Added a dependency-free PDF calculation sheet exporter and toolbar button. The report starts with support, span, section/material properties, deflection limit, loads, reactions, and PASS/FAIL checks, then includes vector beam, shear, moment, and deflection diagrams. Long load lists continue on additional pages. Added the feature to the spec and README.
+- **Worked:** Implementation complete. Not run or manually inspected.
+
+## 2026-11-23
+
 - **Asked:** Add a button that exports a table of x, shear V, moment M, and deflection along the beam to a CSV file that opens in Excel.
 - **Changed:** Added an Export CSV toolbar button that exports the current valid analysis samples with unit-labeled headers, using Excel-friendly UTF-8 encoding. It asks for a valid calculation first and reports write errors. Added the feature to the spec and README.
 - **Worked:** Implementation complete. Not run or manually exercised.

@@ -46,6 +46,10 @@ After a valid calculation, choose **Export CSV** to save the sampled x, shear,
 moment, and deflection values along the beam. The CSV includes units in its
 column headings and opens in spreadsheet programs such as Excel.
 
+Choose **Calculation Sheet PDF** after a valid calculation to create a report
+with the beam inputs and loads first, followed by reactions, bending and
+deflection checks, and the beam, shear, moment, and deflection diagrams.
+
 The input panel has a minimum width so the divider cannot hide the form. After
 updating the source, close existing Beam Designer windows and relaunch `main.py`;
 already running Python processes continue using their previously loaded UI.

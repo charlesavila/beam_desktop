@@ -141,6 +141,7 @@ Build a self-contained desktop application that analyzes a statically determinat
 - Provide **Reset** to restore the example beam.
 - Provide controls to add and remove point and uniform loads.
 - Provide an **Export CSV** action that saves the calculated x, shear V, moment M, and deflection values along the beam in a spreadsheet-compatible CSV file.
+- Provide a **Calculation Sheet PDF** action that saves the inputs, diagrams, results, and bending/deflection checks in a report suitable for hand-in.
 - Provide a File menu with Save and Open actions. Save and restore the support type, span, section and material selections and properties, the L/360 deflection limit, and all point and uniform loads.
 - Update diagrams and the result summary together so no stale result remains visible.
 
@@ -165,6 +166,11 @@ Build a self-contained desktop application that analyzes a statically determinat
 - Use a fun hippy type style with lots of abstract shapes and flowers and rainbows.
 - Aim to give it a psychedelic feel, with lots of bright contrasting colors and swirls.
 - Keep controls, diagrams, and results readable within a desktop application window.
+
+## Additional Features
+1. Save and Open: A File menu with Save and Open that saves the beam (support type, span, section, deflection limit, and loads) to a file and opens it again.
+2. Export results: A button that saves a table of x, V, M, and deflection along the beam to a CSV file that opens in Excel.
+3. Calculation sheet: A button that saves the diagrams and checks as a PDF, with the inputs listed at the top, ready to hand in with a design.
 
 ## Validation and Test Cases
 
