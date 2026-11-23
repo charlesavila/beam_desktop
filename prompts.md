@@ -2,6 +2,12 @@
 
 ## 2026-11-23
 
+- **Asked:** Add a button that exports a table of x, shear V, moment M, and deflection along the beam to a CSV file that opens in Excel.
+- **Changed:** Added an Export CSV toolbar button that exports the current valid analysis samples with unit-labeled headers, using Excel-friendly UTF-8 encoding. It asks for a valid calculation first and reports write errors. Added the feature to the spec and README.
+- **Worked:** Implementation complete. Not run or manually exercised.
+
+## 2026-11-23
+
 - **Asked:** Add a File menu with Save and Open for beam designs, saving support type, span, section, deflection limit, and loads; remove “Saving designs” from the spec's Out of scope section first.
 - **Changed:** Added Save/Open menu actions and Ctrl+S/Ctrl+O shortcuts. Versioned `.beam.json` files preserve support, span, section/material selections and properties, the L/360 limit, and all point/uniform loads; opening restores inputs and recalculates. Added the feature to the spec's Interaction section and documented the workflow in README. The spec's Out of Scope section did not contain a “Saving designs” item.
 - **Worked:** Implementation complete. Not run or manually exercised.
