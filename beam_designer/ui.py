@@ -1,7 +1,8 @@
 """Desktop forms and state coordination; no engineering formulas live here."""
+import json
 import math
 import tkinter as tk
-from tkinter import ttk
+from tkinter import filedialog, messagebox, ttk
 from .models import Beam, Properties, PointLoad, UniformLoad, ValidationIssue
 from .catalog import SECTIONS, MATERIALS, SPEC_EXAMPLES
 from .validation import validate
@@ -84,10 +85,19 @@ class Application:
         self.pending = None
         self.fields = {}
         self.loads = []
+        self.current_file = None
         root.title("Beam Designer | Flower Power Engineering")
         root.geometry("1280x920")
         root.minsize(1040, 700)
         root.configure(bg="#f7f0ff")
+        menu = tk.Menu(root)
+        file_menu = tk.Menu(menu, tearoff=False)
+        file_menu.add_command(label="Open", command=self.open_design, accelerator="Ctrl+O")
+        file_menu.add_command(label="Save", command=self.save_design, accelerator="Ctrl+S")
+        menu.add_cascade(label="File", menu=file_menu)
+        root.configure(menu=menu)
+        root.bind("<Control-o>", lambda _event: self.open_design())
+        root.bind("<Control-s>", lambda _event: self.save_design())
         style = ttk.Style(root)
         style.theme_use("clam")
         style.configure(".", font=("Segoe UI", 10), background="#f7f0ff", foreground="#302248")
@@ -261,6 +271,128 @@ class Application:
             for key in keys:
                 del self.fields[key]
         self.loads.clear()
+
+    def design_document(self):
+        """Return the current editable design in a versioned JSON shape."""
+        def finite_number(key):
+            value = float(self.fields[key][0].get().strip())
+            if not math.isfinite(value):
+                raise ValueError(f"{key} must be a finite number.")
+            return value
+
+        span = finite_number("span")
+        if span <= 0:
+            raise ValueError("Span must be greater than zero to save its deflection limit.")
+        loads = []
+        for kind, _, keys in self.loads:
+            values = [self.fields[key][0].get().strip() for key in keys]
+            for value in values:
+                if not math.isfinite(float(value)):
+                    raise ValueError("Load values must be finite numbers.")
+            loads.append({"type": kind.lower(), "values": values})
+        return {
+            "format": "beam-designer",
+            "version": 1,
+            "support": self.fields["support"][0].get(),
+            "span": self.fields["span"][0].get().strip(),
+            "section": self.fields["section"][0].get(),
+            "material": self.fields["material"][0].get(),
+            "properties": {key: self.fields[key][0].get().strip() for key in
+                           ("inertia", "section_modulus", "elasticity", "allowable_stress")},
+            "deflection_limit": span / 360,
+            "loads": loads,
+        }
+
+    def save_design(self):
+        try:
+            document = self.design_document()
+        except (ValueError, OverflowError) as exc:
+            messagebox.showerror("Cannot save design", str(exc), parent=self.root)
+            return
+        path = self.current_file
+        if path is None:
+            path = filedialog.asksaveasfilename(
+                parent=self.root, title="Save beam design", defaultextension=".beam.json",
+                filetypes=(("Beam design", "*.beam.json"), ("JSON files", "*.json"), ("All files", "*.*")))
+        if not path:
+            return
+        try:
+            with open(path, "w", encoding="utf-8") as design_file:
+                json.dump(document, design_file, indent=2)
+                design_file.write("\n")
+        except OSError as exc:
+            messagebox.showerror("Cannot save design", str(exc), parent=self.root)
+            return
+        self.current_file = path
+        self.root.title(f"Beam Designer | {path}")
+
+    def open_design(self):
+        path = filedialog.askopenfilename(
+            parent=self.root, title="Open beam design",
+            filetypes=(("Beam design", "*.beam.json"), ("JSON files", "*.json"), ("All files", "*.*")))
+        if not path:
+            return
+        try:
+            with open(path, "r", encoding="utf-8") as design_file:
+                document = json.load(design_file)
+            self.apply_design_document(document)
+        except (OSError, json.JSONDecodeError, TypeError, ValueError, KeyError) as exc:
+            messagebox.showerror("Cannot open design", str(exc), parent=self.root)
+            return
+        self.current_file = path
+        self.root.title(f"Beam Designer | {path}")
+
+    def apply_design_document(self, document):
+        if not isinstance(document, dict) or document.get("format") != "beam-designer" or document.get("version") != 1:
+            raise ValueError("This is not a supported Beam Designer file.")
+        required = ("support", "span", "section", "material", "properties", "deflection_limit", "loads")
+        if any(key not in document for key in required):
+            raise ValueError("The design file is missing required beam data.")
+        if not isinstance(document["support"], str) or document["support"] not in ("Simply supported", "Cantilever"):
+            raise ValueError("The design file has an unknown support type.")
+        if not isinstance(document["section"], str) or document["section"] not in (*SECTIONS, "Custom") or \
+                not isinstance(document["material"], str) or document["material"] not in (*MATERIALS, "Custom"):
+            raise ValueError("The design file has an unknown section or material selection.")
+        if not isinstance(document["properties"], dict) or not isinstance(document["loads"], list):
+            raise ValueError("The design file has invalid properties or loads.")
+        property_keys = {"inertia", "section_modulus", "elasticity", "allowable_stress"}
+        if set(document["properties"]) != property_keys:
+            raise ValueError("The design file has incomplete section or material properties.")
+        values = {"support": document["support"], "span": document["span"],
+                  "section": document["section"], "material": document["material"]}
+        values.update(document["properties"])
+        numeric_fields = ("span", "inertia", "section_modulus", "elasticity", "allowable_stress")
+        if any(not isinstance(values.get(key), str) for key in numeric_fields):
+            raise ValueError("The design file has invalid numeric field values.")
+        try:
+            span = float(values["span"])
+            limit = float(document["deflection_limit"])
+            if not math.isfinite(span) or span <= 0 or not math.isfinite(limit):
+                raise ValueError
+            if not math.isclose(limit, span / 360, rel_tol=1e-12, abs_tol=1e-12):
+                raise ValueError
+        except (TypeError, ValueError, OverflowError):
+            raise ValueError("The saved deflection limit must equal span / 360.")
+        parsed_loads = []
+        for load in document["loads"]:
+            if not isinstance(load, dict) or load.get("type") not in ("point", "uniform"):
+                raise ValueError("The design file contains an unknown load type.")
+            expected = 2 if load["type"] == "point" else 3
+            if not isinstance(load.get("values"), list) or len(load["values"]) != expected or any(
+                    not isinstance(value, str) for value in load["values"]):
+                raise ValueError("The design file contains invalid load values.")
+            parsed_loads.append((load["type"].title(), load["values"]))
+
+        self.suspended = True
+        try:
+            self.clear_loads()
+            for key, value in values.items():
+                self.fields[key][0].set(value)
+            for kind, load_values in parsed_loads:
+                self.add_load(kind, load_values)
+        finally:
+            self.suspended = False
+        self.calculate()
 
     def reset(self):
         self.load_example(next(iter(SPEC_EXAMPLES)))

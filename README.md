@@ -38,6 +38,10 @@ scrolling and mouse-wheel scrolling over fields, dropdowns, diagram canvases,
 and scrollbars. Drag the divider to resize the panels. Reset example restores
 the initial inputs. Cantilevers are fixed at the left.
 
+Use **File → Save** or **Ctrl+S** to save the current beam as a `.beam.json` file;
+**File → Open** or **Ctrl+O** restores it. Saved files include the support, span,
+section and material selections and properties, the L/360 limit, and all loads.
+
 The input panel has a minimum width so the divider cannot hide the form. After
 updating the source, close existing Beam Designer windows and relaunch `main.py`;
 already running Python processes continue using their previously loaded UI.

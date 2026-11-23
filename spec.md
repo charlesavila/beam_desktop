@@ -140,6 +140,7 @@ Build a self-contained desktop application that analyzes a statically determinat
 - Provide an explicit **Calculate** action in addition to automatic recalculation.
 - Provide **Reset** to restore the example beam.
 - Provide controls to add and remove point and uniform loads.
+- Provide a File menu with Save and Open actions. Save and restore the support type, span, section and material selections and properties, the L/360 deflection limit, and all point and uniform loads.
 - Update diagrams and the result summary together so no stale result remains visible.
 
 ## Validation Rules

@@ -2,6 +2,12 @@
 
 ## 2026-11-23
 
+- **Asked:** Add a File menu with Save and Open for beam designs, saving support type, span, section, deflection limit, and loads; remove “Saving designs” from the spec's Out of scope section first.
+- **Changed:** Added Save/Open menu actions and Ctrl+S/Ctrl+O shortcuts. Versioned `.beam.json` files preserve support, span, section/material selections and properties, the L/360 limit, and all point/uniform loads; opening restores inputs and recalculates. Added the feature to the spec's Interaction section and documented the workflow in README. The spec's Out of Scope section did not contain a “Saving designs” item.
+- **Worked:** Implementation complete. Not run or manually exercised.
+
+## 2026-11-23
+
 - **Asked:** Read `spec.md` and, before writing code, describe a plan for building the Python Tkinter desktop app, including files, calculation organization, potential issues, and suggested fixes; put the plan in `plan.md`.
 - **Changed:** Added the implementation plan to `plan.md`, including proposed modules, unit and analysis flow, UI structure, risks, and refinements. No application code was written.
 - **Worked:** Yes. The plan was saved. `spec.md` describes a desktop app but does not itself name Tkinter; the plan records Tkinter as the framework specified in the request.
